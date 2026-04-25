@@ -12,7 +12,7 @@
         android:background="@color/purple_500"
         app:title="Crop Image"
         app:titleTextColor="@android:color/white"
-        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel" />
+        app:navigationIcon="@drawable/ic_close" />
 
     <com.ashadujjaman.imagecropprocessor.TouchCropView
         android:id="@+id/touchCropView"
@@ -47,10 +47,9 @@
 
                 <ImageView
                     android:id="@+id/ivRotateIcon"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:src="@android:drawable/ic_menu_rotate"
-                    app:tint="@android:color/white" />
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_rotate"/>
 
                 <TextView
                     android:id="@+id/tvRotateText"
@@ -74,8 +73,7 @@
                     android:id="@+id/ivFlipIcon"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@drawable/ic_flip"
-                    app:tint="@android:color/white" />
+                    android:src="@drawable/ic_flip" />
 
                 <TextView
                     android:id="@+id/tvFlipText"
@@ -86,12 +84,29 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
+            <LinearLayout
                 android:id="@+id/btnDone"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Crop Now"
-                app:cornerRadius="20dp" />
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/ivDoneIcon"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_done" />
+
+                <TextView
+                    android:id="@+id/tvDoneText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Done"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>

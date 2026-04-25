@@ -109,13 +109,13 @@ public class CustomCropActivity extends AppCompatActivity {
         touchCropView = findViewById(R.id.touchCropView);
         View btnRotate = findViewById(R.id.btnRotate);
         View btnFlip = findViewById(R.id.btnFlip);
-        MaterialButton btnDone = findViewById(R.id.btnDone);
+        View btnDone = findViewById(R.id.btnDone);
         LinearLayout controlPanel = findViewById(R.id.controlPanel);
 
         if (options != null) {
             btnRotate.setVisibility(options.showRotation ? View.VISIBLE : View.GONE);
             btnFlip.setVisibility(options.showFlip ? View.VISIBLE : View.GONE);
-            btnDone.setBackgroundColor(options.toolbarColor);
+
             
             // Dynamic Control Panel Color
             if (controlPanel != null) {
@@ -126,11 +126,15 @@ public class CustomCropActivity extends AppCompatActivity {
             TextView tvRotate = findViewById(R.id.tvRotateText);
             ImageView ivFlip = findViewById(R.id.ivFlipIcon);
             TextView tvFlip = findViewById(R.id.tvFlipText);
+            ImageView ivDoneIcon = findViewById(R.id.ivDoneIcon);
+            TextView tvDoneText = findViewById(R.id.tvDoneText);
 
             if (ivRotate != null) ivRotate.setColorFilter(options.activeWidgetColor);
             if (tvRotate != null) tvRotate.setTextColor(options.activeWidgetColor);
             if (ivFlip != null) ivFlip.setColorFilter(options.activeWidgetColor);
             if (tvFlip != null) tvFlip.setTextColor(options.activeWidgetColor);
+            if (ivDoneIcon != null) ivDoneIcon.setColorFilter(options.toolbarColor);
+            if (tvDoneText != null) tvDoneText.setTextColor(options.toolbarColor);
         }
 
         btnRotate.setOnClickListener(v -> touchCropView.rotate(90));
