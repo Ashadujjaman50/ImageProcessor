@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Internal files directory -->
+    <files-path name="internal_files" path="." />
+
+    <!-- External files directory (Fixes your current crash) -->
+    <external-files-path name="external_files" path="." />
+
+    <!-- Cache directory -->
+    <cache-path name="cache_files" path="." />
+
+    <!-- External storage root (Optional but safe) -->
+    <external-path name="external_storage" path="." />
+</paths>
