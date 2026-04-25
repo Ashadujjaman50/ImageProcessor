@@ -54,16 +54,16 @@ CropOptions options = new CropOptions.Builder()
         .setAspectRatio(4, 3)
 
         // Toolbar (Primary Color)
-        .setToolbarConfig(Color.parseColor("#1E88E5"), Color.WHITE, "Crop Photo")
+        .setToolbarConfig(Color.parseColor("#46A35C"), Color.WHITE, "Crop Photo")
 
         // Status Bar (Darker version of primary)
-        .setStatusBarColor(Color.parseColor("#1565C0"))
+        .setStatusBarColor(Color.parseColor("#E6E6E6"))
 
         // Active controls (Accent color)
-        .setActiveWidgetColor(Color.parseColor("#FFB300"))
+        .setActiveWidgetColor(Color.parseColor("#02B860"))
 
         // Background panel (Dark theme)
-        .setControlPanelColor(Color.parseColor("#121212"))
+        .setControlPanelColor(Color.parseColor("#FFFFFF"))
 
         // Guides
         .setShowGuides(true)
@@ -74,7 +74,8 @@ CropOptions options = new CropOptions.Builder()
         // Max size
         .setMaxResultSize(1080, 1080)
 
-        .build();
+        .build();         
+                
 ```
 
 ---
