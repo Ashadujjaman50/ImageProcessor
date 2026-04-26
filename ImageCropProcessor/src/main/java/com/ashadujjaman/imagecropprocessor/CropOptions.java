@@ -6,22 +6,27 @@ import android.graphics.Color;
 import java.io.Serializable;
 
 public class CropOptions implements Serializable {
+    public enum FrameType {
+        RECTANGLE, CIRCLE
+    }
+
     public boolean showRotation = true;
     public boolean showFlip = true;
     public float aspectRatioX = 0; 
     public float aspectRatioY = 0;
     public boolean isFixedAspectRatio = false;
     public boolean showGuides = true;
+    public FrameType frameType = FrameType.RECTANGLE;
 
-    public int toolbarColor = Color.parseColor("#6200EE");
+    public int toolbarColor = Color.parseColor("#46A35C");
     public int toolbarTitleColor = Color.WHITE;
     public String toolbarTitle = "Crop Image";
 
     // uCrop-like options
     public Bitmap.CompressFormat compressFormat = Bitmap.CompressFormat.JPEG;
     public int compressQuality = 100;
-    public int statusBarColor = Color.parseColor("#3700B3");
-    public int activeWidgetColor = Color.parseColor("#6200EE");
+    public int statusBarColor = Color.parseColor("#D6E4D7");
+    public int activeWidgetColor = Color.parseColor("#FFFFFF");
     public int maxResultWidth = 0;
     public int maxResultHeight = 0;
     
@@ -84,6 +89,11 @@ public class CropOptions implements Serializable {
 
         public Builder setControlPanelColor(int color) {
             options.controlPanelColor = color;
+            return this;
+        }
+
+        public Builder setFrameType(FrameType type) {
+            options.frameType = type;
             return this;
         }
 

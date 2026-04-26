@@ -1,11 +1,5 @@
 # ImageCropProcessor 📸
 
-[English](#english) | [বাংলা](#বাংলা)
-
----
-
-## English
-
 **ImageCropProcessor** is a powerful and customizable Android library that provides image cropping functionality without any third-party dependencies. It allows users to zoom, pan, rotate, and flip images, and crop them according to various aspect ratios.
 
 ### ✨ Features
@@ -75,45 +69,6 @@ CropOptions options = new CropOptions.Builder()
         .setMaxResultSize(1080, 1080)
 
         .build();
-```
-
----
-
-## বাংলা
-
-**ImageCropProcessor** একটি শক্তিশালী এবং কাস্টমাইজযোগ্য অ্যান্ড্রয়েড লাইব্রেরি, যা কোনো থার্ড-পার্টি ডিপেন্ডেন্সি ছাড়াই ইমেজ ক্রপিংয়ের সুবিধা দেয়। এটি ইউজারকে জুম, প্যান, রোটেশন এবং ফ্লিপ করার পাশাপাশি বিভিন্ন অ্যাসপেক্ট রেশিওতে ছবি কাটার সুবিধা প্রদান করে।
-
-### ✨ ফিচারসমূহ
-- ✅ **No Third-party Library:** পুরোপুরি নেটিভ অ্যান্ড্রয়েড এপিআই ব্যবহার করে তৈরি।
-- ✅ **Gesture Support:** Pinch to Zoom এবং Drag to Pan সুবিধা।
-- ✅ **Smart Bounce back:** ইমেজ ফ্রেমের বাইরে চলে গেলে বা ছোট হলে অটোমেটিক ফ্রেমের সাথে ফিট হয়ে যায়।
-- ✅ **Dynamic Customization:** টুলবার, স্ট্যাটাস বার, এবং কন্ট্রোল প্যানেলের কালার ডাইনামিকালি সেট করা যায়।
-- ✅ **Rule of Thirds:** ক্রপিংয়ের সময় গাইড লাইন বা গ্রিড ভিউ।
-- ✅ **Aspect Ratio:** নির্দিষ্ট রেশিও (যেমন: 4:3, 16:9) অথবা ফ্রি ক্রপিং।
-- ✅ **Compression & Resize:** আউটপুট ইমেজের কোয়ালিটি এবং ম্যাক্সিমাম সাইজ কন্ট্রোল করার সুবিধা।
-
-### 🚀 ইন্সটলেশন
-
-#### Step 1: JitPack রিপোজিটরি যোগ করুন
-আপনার প্রজেক্টের `settings.gradle.kts` ফাইলে এটি যোগ করুন:
-
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
-    }
-}
-```
-
-#### Step 2: ডিপেন্ডেন্সি যোগ করুন
-আপনার অ্যাপ মডিউলের `build.gradle.kts` ফাইলে লাইব্রেরিটি যোগ করুন:
-
-```kotlin
-dependencies {
-    implementation("com.github.Ashadujjaman50:ImageProcessor:1.0.0")
-}
 ```
 
 ---

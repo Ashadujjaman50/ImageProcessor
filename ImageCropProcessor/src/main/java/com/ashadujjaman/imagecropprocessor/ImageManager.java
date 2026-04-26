@@ -38,6 +38,7 @@ public class ImageManager {
         if (photoFile != null) {
             cameraUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", photoFile);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraUri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             launcher.launch(intent);
         }
     }
@@ -46,6 +47,9 @@ public class ImageManager {
         Intent intent = new Intent(context, CustomCropActivity.class);
         intent.putExtra("imageUri", uri);
         intent.putExtra("options", options);
+        // এনিমেশন বন্ধ করে সরাসরি ওপেন করা যাতে ফ্লিকার না হয়
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         launcher.launch(intent);
     }
 

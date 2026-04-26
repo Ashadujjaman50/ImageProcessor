@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -31,8 +33,17 @@ public class TouchCropView extends View {
     private final Paint overlayPaint = new Paint();
     private final Paint borderPaint = new Paint();
     private final Paint guidePaint = new Paint();
+    private final Paint cornerPaint = new Paint();
 
     private boolean showGuides = true;
+    private float lastAngle = 0f;
+    private float currentRotation = 0f;
+    private CropOptions.FrameType frameType = CropOptions.FrameType.RECTANGLE;
+    private OnTouchRotationListener rotationListener;
+
+    public interface OnTouchRotationListener {
+        void onRotationChanged(float totalRotation);
+    }
 
     public TouchCropView(Context context) {
         super(context);
@@ -49,15 +60,26 @@ public class TouchCropView extends View {
         overlayPaint.setStyle(Paint.Style.FILL);
 
         borderPaint.setColor(Color.WHITE);
-        borderPaint.setStrokeWidth(5f);
+        borderPaint.setStrokeWidth(3f);
         borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setAntiAlias(true);
 
         guidePaint.setColor(Color.parseColor("#AAFFFFFF"));
-        guidePaint.setStrokeWidth(2f);
+        guidePaint.setStrokeWidth(1.5f);
         guidePaint.setStyle(Paint.Style.STROKE);
+
+        cornerPaint.setColor(Color.WHITE);
+        cornerPaint.setStrokeWidth(8f);
+        cornerPaint.setStyle(Paint.Style.STROKE);
+        cornerPaint.setStrokeCap(Paint.Cap.ROUND);
+        cornerPaint.setAntiAlias(true);
 
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
+    }
+
+    public void setOnTouchRotationListener(OnTouchRotationListener listener) {
+        this.rotationListener = listener;
     }
 
     public void setBitmap(Bitmap bitmap) {
@@ -83,23 +105,37 @@ public class TouchCropView extends View {
         invalidate();
     }
 
+    public void setFrameType(CropOptions.FrameType type) {
+        this.frameType = type;
+        invalidate();
+    }
+
+    public float getCurrentRotation() {
+        return normalizeAngle(currentRotation);
+    }
+
+    private float normalizeAngle(float angle) {
+        return (angle % 360 + 360) % 360;
+    }
+
     private void resetImage() {
         if (bitmap == null || getWidth() == 0 || cropRect.isEmpty()) return;
 
         matrix.reset();
+        currentRotation = 0f;
         float viewWidth = getWidth();
         float viewHeight = getHeight();
         float bitmapWidth = bitmap.getWidth();
         float bitmapHeight = bitmap.getHeight();
 
-        // Ensure the image covers the entire crop frame (both width and height)
         float scale = Math.max(cropRect.width() / bitmapWidth, cropRect.height() / bitmapHeight);
 
         matrix.postScale(scale, scale);
-        // Center the image within the crop frame
-        matrix.postTranslate(cropRect.centerX() - (bitmapWidth * scale) / 2f, 
+        matrix.postTranslate(cropRect.centerX() - (bitmapWidth * scale) / 2f,
                              cropRect.centerY() - (bitmapHeight * scale) / 2f);
         checkBounds();
+
+        if (rotationListener != null) rotationListener.onRotationChanged(0f);
     }
 
     private void calculateCropRect() {
@@ -116,7 +152,6 @@ public class TouchCropView extends View {
         width = maxWidth;
         height = width / aspectRatio;
         
-        // যদি হাইট স্ক্রিনের বাইরে চলে যায়, তবে হাইট অনুযায়ী অ্যাডজাস্ট করা
         if (height > maxHeight) {
             height = maxHeight;
             width = height * aspectRatio;
@@ -130,25 +165,61 @@ public class TouchCropView extends View {
     private void checkBounds() {
         if (bitmap == null || cropRect.isEmpty()) return;
 
-        RectF bitmapRect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        matrix.mapRect(bitmapRect);
-
-        // 1. Scale Check: Zoom back in if the image becomes smaller than the frame
-        if (bitmapRect.width() < cropRect.width() - 1 || bitmapRect.height() < cropRect.height() - 1) {
-            float scale = Math.max(cropRect.width() / bitmapRect.width(), cropRect.height() / bitmapRect.height());
-            matrix.postScale(scale, scale, cropRect.centerX(), cropRect.centerY());
-            
-            bitmapRect.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
-            matrix.mapRect(bitmapRect);
+        int iterations = 0;
+        while (!isCropRectInsideBitmap() && iterations < 50) {
+            matrix.postScale(1.02f, 1.02f, cropRect.centerX(), cropRect.centerY());
+            iterations++;
         }
 
+        RectF bounds = new RectF();
+        calculateTransformedBitmapBounds(bounds);
         float dx = 0, dy = 0;
-        if (bitmapRect.left > cropRect.left) dx = cropRect.left - bitmapRect.left;
-        if (bitmapRect.right < cropRect.right) dx = cropRect.right - bitmapRect.right;
-        if (bitmapRect.top > cropRect.top) dy = cropRect.top - bitmapRect.top;
-        if (bitmapRect.bottom < cropRect.bottom) dy = cropRect.bottom - bitmapRect.bottom;
+        
+        if (bounds.left > cropRect.left) dx = cropRect.left - bounds.left;
+        else if (bounds.right < cropRect.right) dx = cropRect.right - bounds.right;
+        
+        if (bounds.top > cropRect.top) dy = cropRect.top - bounds.top;
+        else if (bounds.bottom < cropRect.bottom) dy = cropRect.bottom - bounds.bottom;
 
         matrix.postTranslate(dx, dy);
+    }
+
+    private void calculateTransformedBitmapBounds(RectF outBounds) {
+        outBounds.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        matrix.mapRect(outBounds);
+    }
+
+    private boolean isCropRectInsideBitmap() {
+        float[] bitmapPts = new float[] {
+                0, 0,
+                bitmap.getWidth(), 0,
+                bitmap.getWidth(), bitmap.getHeight(),
+                0, bitmap.getHeight()
+        };
+        matrix.mapPoints(bitmapPts);
+
+        PointF[] poly = new PointF[] {
+                new PointF(bitmapPts[0], bitmapPts[1]),
+                new PointF(bitmapPts[2], bitmapPts[3]),
+                new PointF(bitmapPts[4], bitmapPts[5]),
+                new PointF(bitmapPts[6], bitmapPts[7])
+        };
+
+        return isPointInPoly(cropRect.left, cropRect.top, poly) &&
+               isPointInPoly(cropRect.right, cropRect.top, poly) &&
+               isPointInPoly(cropRect.right, cropRect.bottom, poly) &&
+               isPointInPoly(cropRect.left, cropRect.bottom, poly);
+    }
+
+    private boolean isPointInPoly(float x, float y, PointF[] poly) {
+        boolean inside = false;
+        for (int i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            if (((poly[i].y > y) != (poly[j].y > y)) &&
+                    (x < (poly[j].x - poly[i].x) * (y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)) {
+                inside = !inside;
+            }
+        }
+        return inside;
     }
 
     @Override
@@ -167,14 +238,25 @@ public class TouchCropView extends View {
 
         canvas.drawBitmap(bitmap, matrix, null);
 
-        canvas.drawRect(0, 0, getWidth(), cropRect.top, overlayPaint);
-        canvas.drawRect(0, cropRect.bottom, getWidth(), getHeight(), overlayPaint);
-        canvas.drawRect(0, cropRect.top, cropRect.left, cropRect.bottom, overlayPaint);
-        canvas.drawRect(cropRect.right, cropRect.top, getWidth(), cropRect.bottom, overlayPaint);
+        Path path = new Path();
+        path.addRect(0, 0, getWidth(), getHeight(), Path.Direction.CW);
+        
+        if (frameType == CropOptions.FrameType.CIRCLE) {
+            path.addCircle(cropRect.centerX(), cropRect.centerY(), Math.min(cropRect.width(), cropRect.height()) / 2f, Path.Direction.CCW);
+        } else {
+            path.addRect(cropRect, Path.Direction.CCW);
+        }
+        canvas.drawPath(path, overlayPaint);
 
-        canvas.drawRect(cropRect, borderPaint);
+        if (frameType == CropOptions.FrameType.CIRCLE) {
+            canvas.drawCircle(cropRect.centerX(), cropRect.centerY(), Math.min(cropRect.width(), cropRect.height()) / 2f, borderPaint);
+        } else {
+            canvas.drawRect(cropRect, borderPaint);
+        }
 
-        if (showGuides) {
+        drawCorners(canvas);
+
+        if (showGuides && frameType == CropOptions.FrameType.RECTANGLE) {
             float thirdWidth = cropRect.width() / 3;
             float thirdHeight = cropRect.height() / 3;
 
@@ -185,15 +267,62 @@ public class TouchCropView extends View {
         }
     }
 
+    private void drawCorners(Canvas canvas) {
+        float len = 20 * getResources().getDisplayMetrics().density;
+
+        canvas.drawLine(cropRect.left, cropRect.top, cropRect.left + len, cropRect.top, cornerPaint);
+        canvas.drawLine(cropRect.left, cropRect.top, cropRect.left, cropRect.top + len, cornerPaint);
+
+        canvas.drawLine(cropRect.right, cropRect.top, cropRect.right - len, cropRect.top, cornerPaint);
+        canvas.drawLine(cropRect.right, cropRect.top, cropRect.right, cropRect.top + len, cornerPaint);
+
+        canvas.drawLine(cropRect.left, cropRect.bottom, cropRect.left + len, cropRect.bottom, cornerPaint);
+        canvas.drawLine(cropRect.left, cropRect.bottom, cropRect.left, cropRect.bottom - len, cornerPaint);
+
+        canvas.drawLine(cropRect.right, cropRect.bottom, cropRect.right - len, cropRect.bottom, cornerPaint);
+        canvas.drawLine(cropRect.right, cropRect.bottom, cropRect.right, cropRect.bottom - len, cornerPaint);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
         gestureDetector.onTouchEvent(event);
-        if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-            checkBounds();
-            invalidate();
+
+        int action = event.getActionMasked();
+        switch (action) {
+            case MotionEvent.ACTION_POINTER_DOWN:
+                if (event.getPointerCount() == 2) {
+                    lastAngle = calculateAngle(event);
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (event.getPointerCount() == 2) {
+                    float currentAngle = calculateAngle(event);
+                    float deltaAngle = currentAngle - lastAngle;
+                    matrix.postRotate(deltaAngle, cropRect.centerX(), cropRect.centerY());
+                    currentRotation += deltaAngle;
+                    lastAngle = currentAngle;
+
+                    if (rotationListener != null) {
+                        rotationListener.onRotationChanged(getCurrentRotation());
+                    }
+
+                    invalidate();
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                checkBounds();
+                invalidate();
+                break;
         }
         return true;
+    }
+
+    private float calculateAngle(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.toDegrees(Math.atan2(y, x));
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -217,31 +346,28 @@ public class TouchCropView extends View {
 
     public Bitmap getCroppedBitmap() {
         if (bitmap == null) return null;
-
-        matrix.invert(inverseMatrix);
-        RectF mappedCropRect = new RectF();
-        inverseMatrix.mapRect(mappedCropRect, cropRect);
-
-        int left = Math.max(0, (int) mappedCropRect.left);
-        int top = Math.max(0, (int) mappedCropRect.top);
-        int width = Math.min(bitmap.getWidth() - left, (int) mappedCropRect.width());
-        int height = Math.min(bitmap.getHeight() - top, (int) mappedCropRect.height());
-
-        if (width <= 0 || height <= 0) return null;
-
-        return Bitmap.createBitmap(bitmap, left, top, width, height);
+        Bitmap result = Bitmap.createBitmap((int)cropRect.width(), (int)cropRect.height(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+        Matrix cropMatrix = new Matrix(matrix);
+        cropMatrix.postTranslate(-cropRect.left, -cropRect.top);
+        canvas.drawBitmap(bitmap, cropMatrix, new Paint(Paint.FILTER_BITMAP_FLAG));
+        return result;
     }
 
     public void rotate(float degrees) {
         if (bitmap == null) return;
         matrix.postRotate(degrees, cropRect.centerX(), cropRect.centerY());
+        currentRotation += degrees;
         checkBounds();
         invalidate();
+
+        if (rotationListener != null) {
+            rotationListener.onRotationChanged(getCurrentRotation());
+        }
     }
 
     public void flip() {
         if (bitmap == null) return;
-        // Using scale -1 for flip. We need to be careful with the center point.
         matrix.postScale(-1, 1, cropRect.centerX(), cropRect.centerY());
         checkBounds();
         invalidate();

@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
-    // ২. ক্যামেরা লঞ্চার
+    // ২. ক্যামেরা লঞ্চার (আগে ছবি তুলবে, তারপর ক্রপ শুরু হবে)
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -57,19 +57,7 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
-    // ৩. পারমিশন লঞ্চার
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
-            isGranted -> {
-                if (isGranted) {
-                    imageManager.openCamera(cameraLauncher);
-                } else {
-                    Toast.makeText(this, "Camera permission is required to take photos", Toast.LENGTH_SHORT).show();
-                }
-            }
-    );
-
-    // ৪. গ্যালারি লঞ্চার
+    // ৩. গ্যালারি লঞ্চার (আগে ছবি নিবে, তারপর ক্রপ শুরু হবে)
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -82,39 +70,43 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
+    // ৪. পারমিশন লঞ্চার
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    imageManager.openCamera(cameraLauncher);
+                } else {
+                    Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
-
         ivCroppedImage = findViewById(R.id.ivCroppedImage);
         imageManager = new ImageManager(this);
 
-        // লাইব্রেরির সব নতুন অপশন এখান থেকে কন্ট্রোল করা হচ্ছে
         options = new CropOptions.Builder()
-                .setAspectRatio(340, 410)                    // আপনার কাঙ্খিত রেশিও
+                .setAspectRatio(3, 2)
+                .setFrameType(CropOptions.FrameType.RECTANGLE)
                 .setRotationEnabled(true)
                 .setFlipEnabled(true)
                 .setToolbarConfig(Color.parseColor("#46A35C"), Color.WHITE, "Crop Photo")
-                .setStatusBarColor(Color.parseColor("#E6E6E6"))
+                .setStatusBarColor(Color.parseColor("#D6E4D7"))
                 .setActiveWidgetColor(Color.parseColor("#02B860"))
-                .setControlPanelColor(Color.parseColor("#FFFFFF"))
+                .setControlPanelColor(Color.parseColor("#1B1B1B"))
                 .setCompression(Bitmap.CompressFormat.JPEG, 80)
                 .setMaxResultSize(1080, 1080)
                 .setShowGuides(true)
                 .build();
 
-        // গ্যালারি বাটন
         findViewById(R.id.btnOpenGallery).setOnClickListener(v -> imageManager.openGallery(galleryLauncher));
 
-        // ক্যামেরা বাটন (পারমিশন চেক সহ)
         findViewById(R.id.btnOpenCamera).setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 imageManager.openCamera(cameraLauncher);

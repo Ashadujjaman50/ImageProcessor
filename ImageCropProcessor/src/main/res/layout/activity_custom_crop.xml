@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#121212">
+
+    <!-- স্ট্যাটাস বারের জন্য স্পেসার ভিউ -->
+    <View
+        android:id="@+id/statusBarSpacer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/status_bar_color" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/cropToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_500"
+        android:layout_below="@id/statusBarSpacer"
+        android:background="@color/toolbar_bg_color"
         app:title="Crop Image"
         app:titleTextColor="@android:color/white"
         app:navigationIcon="@drawable/ic_close" />
@@ -18,8 +27,32 @@
         android:id="@+id/touchCropView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/controlPanel"
+        android:layout_above="@+id/rotationControlArea"
         android:layout_below="@id/cropToolbar" />
+
+    <LinearLayout
+        android:id="@+id/rotationControlArea"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/controlPanel"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/tvRotationAngle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0°"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+        <com.ashadujjaman.imagecropprocessor.RotationScaleView
+            android:id="@+id/rotationScaleView"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/controlPanel"
@@ -27,14 +60,16 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="#1E1E1E"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
+        <!-- নেভিগেশন বারের জন্য প্যাডিং এখান থেকে হ্যান্ডেল হবে -->
         <LinearLayout
+            android:id="@+id/innerControlPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="16dp">
 
             <LinearLayout
                 android:id="@+id/btnRotate"
@@ -44,13 +79,11 @@
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:id="@+id/ivRotateIcon"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:src="@drawable/ic_rotate"/>
-
                 <TextView
                     android:id="@+id/tvRotateText"
                     android:layout_width="wrap_content"
@@ -68,13 +101,11 @@
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:id="@+id/ivFlipIcon"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:src="@drawable/ic_flip" />
-
                 <TextView
                     android:id="@+id/tvFlipText"
                     android:layout_width="wrap_content"
@@ -92,13 +123,11 @@
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:id="@+id/ivDoneIcon"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:src="@drawable/ic_done" />
-
                 <TextView
                     android:id="@+id/tvDoneText"
                     android:layout_width="wrap_content"
@@ -107,7 +136,12 @@
                     android:textColor="@android:color/white"
                     android:textSize="12sp" />
             </LinearLayout>
-
         </LinearLayout>
+
+        <!-- নেভিগেশন বারের ফাঁকা জায়গা পূরণের জন্য নিচের ভিউ -->
+        <View
+            android:id="@+id/navigationBarSpacer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
     </LinearLayout>
 </RelativeLayout>
