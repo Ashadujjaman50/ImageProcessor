@@ -75,8 +75,36 @@ protected void onCreate(Bundle savedInstanceState) {
     // Use imageManager.openGallery(galleryLauncher) or imageManager.openCamera(cameraLauncher)
 }
 ```
+#### 2. Camera Launcher (takes picture first, then starts cropping)
+```java
+private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        result -> {
+            if (result.getResultCode() == RESULT_OK) {
+                Uri cameraUri = imageManager.getCameraUri();
+                if (cameraUri != null) {
+                    imageManager.startCrop(cameraUri, options, cropResultLauncher);
+                }
+            }
+        }
+);
+```
+#### 3. Gallery Launcher (takes picture first, then starts cropping)
+```java
+private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Uri selectedUri = result.getData().getData();
+                if (selectedUri != null) {
+                    imageManager.startCrop(selectedUri, options, cropResultLauncher);
+                }
+            }
+        }
+);
+```
 
-#### 2. Configure `CropOptions`
+#### 4. Configure `CropOptions`
 Customize the cropping UI and behavior using the `Builder`.
 
 ```java
