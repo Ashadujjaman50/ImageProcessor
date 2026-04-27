@@ -71,42 +71,47 @@ protected void onCreate(Bundle savedInstanceState) {
             }
     );
 
-    // 2. Camera/Gallery Launchers
-    // Use imageManager.openGallery(galleryLauncher) or imageManager.openCamera(cameraLauncher)
+    // 2. Camera Launcher
+    ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    Uri cameraUri = imageManager.getCameraUri();
+                    if (cameraUri != null) {
+                        imageManager.startCrop(cameraUri, options, cropResultLauncher);
+                    }
+                }
+            }
+    );
+
+    // 3. Permission Launcher for Camera
+    ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    imageManager.openCamera(cameraLauncher);
+                } else {
+                    Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 }
 ```
-#### 2. Camera Launcher (takes picture first, then starts cropping)
+
+#### 2. Handle Camera Permission & Open Camera
+In your click listener, check for permission before opening the camera.
+
 ```java
-private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
-        new ActivityResultContracts.StartActivityForResult(),
-        result -> {
-            if (result.getResultCode() == RESULT_OK) {
-                Uri cameraUri = imageManager.getCameraUri();
-                if (cameraUri != null) {
-                    imageManager.startCrop(cameraUri, options, cropResultLauncher);
-                }
-            }
-        }
-);
-```
-#### 3. Gallery Launcher (takes picture first, then starts cropping)
-```java
-private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
-        new ActivityResultContracts.StartActivityForResult(),
-        result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                Uri selectedUri = result.getData().getData();
-                if (selectedUri != null) {
-                    imageManager.startCrop(selectedUri, options, cropResultLauncher);
-                }
-            }
-        }
-);
+btnOpenCamera.setOnClickListener(v -> {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        imageManager.openCamera(cameraLauncher);
+    } else {
+        requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+    }
+});
 ```
 
-#### 4. Configure `CropOptions`
-Customize the cropping UI and behavior using the `Builder`.
-
+#### 3. Configure `CropOptions`
 ```java
 options = new CropOptions.Builder()
         .setFrameType(CropOptions.FrameType.CIRCLE) // Choose RECTANGLE or CIRCLE
@@ -129,12 +134,12 @@ options = new CropOptions.Builder()
 
 The editor provides intuitive controls to fine-tune your crop:
 
-| Control            | Description                                                                                                                                                                                                                                          |
-|:-------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Rotate**         | Rotates the image **90 degrees clockwise** with each click.                                                                                                                                                                                          |
-| **Flip**           | Flips the image **horizontally** (Mirror effect). Useful for fixing selfies.                                                                                                                                                                         |
-| **Scale (On/Off)** | **Toggles Rotation Mode**. When **ON**, it enables manual rotation via touch gestures and shows a precise rotation scale. When **OFF**, the rotation UI is hidden and manual rotation is locked to prevent accidental tilting while zooming/panning. |
-| **Done (✔)**       | Located in the **Toolbar**. Finalizes the cropping process and returns the result.                                                                                                                                                                   |
+| Control | Description |
+| :--- | :--- |
+| **Rotate** | Rotates the image **90 degrees clockwise** with each click. |
+| **Flip** | Flips the image **horizontally** (Mirror effect). |
+| **Scale (On/Off)** | **Toggles Rotation Mode**. When **ON**, it enables manual rotation via touch gestures and shows a precise rotation scale. When **OFF**, rotation is locked. |
+| **Done (✔)** | Processes the crop and returns the result. |
 
 ---
 
