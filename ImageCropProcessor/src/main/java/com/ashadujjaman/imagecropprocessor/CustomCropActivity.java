@@ -33,6 +33,8 @@ public class CustomCropActivity extends AppCompatActivity {
     private TouchCropView touchCropView;
     private RotationScaleView rotationScaleView;
     private TextView tvRotationAngle;
+    private View rotationControlArea;
+    private TextView tvScaleText;
     private CropOptions options;
 
     @Override
@@ -94,7 +96,6 @@ public class CustomCropActivity extends AppCompatActivity {
                             : 1.0f;
                         touchCropView.setAspectRatio(ratio, options.isFixedAspectRatio);
                         touchCropView.setShowGuides(options.showGuides);
-                        // এটি খুবই গুরুত্বপূর্ণ: ফ্রেম টাইপ সেট করা
                         touchCropView.setFrameType(options.frameType);
                     }
                 });
@@ -106,10 +107,16 @@ public class CustomCropActivity extends AppCompatActivity {
 
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.cropToolbar);
+        ImageView btnDoneToolbar = findViewById(R.id.btnDoneToolbar);
+
         if (options != null) {
             toolbar.setBackgroundColor(options.toolbarColor);
             toolbar.setTitleTextColor(options.toolbarTitleColor);
             toolbar.setTitle(options.toolbarTitle);
+
+            if (btnDoneToolbar != null) {
+                btnDoneToolbar.setColorFilter(options.toolbarTitleColor);
+            }
 
             Window window = getWindow();
             window.setStatusBarColor(Color.TRANSPARENT);
@@ -125,6 +132,10 @@ public class CustomCropActivity extends AppCompatActivity {
             sendCancelResult();
             finish();
         });
+
+        if (btnDoneToolbar != null) {
+            btnDoneToolbar.setOnClickListener(v -> performFinalCrop());
+        }
     }
 
     private boolean isColorLight(int color) {
@@ -153,13 +164,14 @@ public class CustomCropActivity extends AppCompatActivity {
         touchCropView = findViewById(R.id.touchCropView);
         rotationScaleView = findViewById(R.id.rotationScaleView);
         tvRotationAngle = findViewById(R.id.tvRotationAngle);
+        rotationControlArea = findViewById(R.id.rotationControlArea);
 
         View btnRotate = findViewById(R.id.btnRotate);
         View btnFlip = findViewById(R.id.btnFlip);
-        View btnDone = findViewById(R.id.btnDone);
+        View btnScale = findViewById(R.id.btnScale);
         LinearLayout controlPanel = findViewById(R.id.controlPanel);
+        tvScaleText = findViewById(R.id.tvScaleText);
 
-        // ১. হাত দিয়ে টাচ করে ঘোরানোর লিসেনার (নতুন যোগ করা হলো)
         if (touchCropView != null) {
             touchCropView.setOnTouchRotationListener(currentRot -> {
                 tvRotationAngle.setText(String.format(Locale.getDefault(), "%.1f°", currentRot));
@@ -169,7 +181,6 @@ public class CustomCropActivity extends AppCompatActivity {
             });
         }
 
-        // ২. নিচের স্কেল দিয়ে ঘোরানোর লিসেনার
         if (rotationScaleView != null) {
             rotationScaleView.setOnRotationChangeListener(deltaAngle -> {
                 touchCropView.rotate(deltaAngle);
@@ -191,18 +202,18 @@ public class CustomCropActivity extends AppCompatActivity {
             TextView tvRotate = findViewById(R.id.tvRotateText);
             ImageView ivFlip = findViewById(R.id.ivFlipIcon);
             TextView tvFlip = findViewById(R.id.tvFlipText);
-            ImageView ivDoneIcon = findViewById(R.id.ivDoneIcon);
-            TextView tvDoneText = findViewById(R.id.tvDoneText);
+            ImageView ivScale = findViewById(R.id.ivScaleIcon);
 
             if (ivRotate != null) ivRotate.setColorFilter(options.activeWidgetColor);
             if (tvRotate != null) tvRotate.setTextColor(options.activeWidgetColor);
             if (ivFlip != null) ivFlip.setColorFilter(options.activeWidgetColor);
             if (tvFlip != null) tvFlip.setTextColor(options.activeWidgetColor);
-            if (ivDoneIcon != null) ivDoneIcon.setColorFilter(options.toolbarColor);
-            if (tvDoneText != null) tvDoneText.setTextColor(options.toolbarColor);
+            if (ivScale != null) ivScale.setColorFilter(options.activeWidgetColor);
+            if (tvScaleText != null) tvScaleText.setTextColor(options.activeWidgetColor);
         }
 
-        // ৩. রোটেশন বাটনে ক্লিক লিসেনার
+        updateScaleUI();
+
         btnRotate.setOnClickListener(v -> {
             touchCropView.rotate(90);
             float currentRot = touchCropView.getCurrentRotation();
@@ -213,7 +224,23 @@ public class CustomCropActivity extends AppCompatActivity {
         });
 
         btnFlip.setOnClickListener(v -> touchCropView.flip());
-        btnDone.setOnClickListener(v -> performFinalCrop());
+        
+        btnScale.setOnClickListener(v -> {
+            boolean isEnabled = touchCropView.isRotationEnabled();
+            touchCropView.setRotationEnabled(!isEnabled);
+            updateScaleUI();
+        });
+    }
+
+    private void updateScaleUI() {
+        boolean isRotationEnabled = touchCropView.isRotationEnabled();
+        if (isRotationEnabled) {
+            tvScaleText.setText("Scale On");
+            rotationControlArea.setVisibility(View.VISIBLE);
+        } else {
+            tvScaleText.setText("Scale Off");
+            rotationControlArea.setVisibility(View.GONE);
+        }
     }
 
     private void performFinalCrop() {

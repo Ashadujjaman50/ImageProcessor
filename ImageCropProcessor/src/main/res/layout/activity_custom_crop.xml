@@ -21,7 +21,21 @@
         android:background="@color/toolbar_bg_color"
         app:title="Crop Image"
         app:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/ic_close" />
+        app:navigationIcon="@drawable/ic_close">
+
+        <ImageView
+            android:id="@+id/btnDoneToolbar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_done"
+            app:tint="@android:color/white" />
+    </androidx.appcompat.widget.Toolbar>
 
     <com.ashadujjaman.imagecropprocessor.TouchCropView
         android:id="@+id/touchCropView"
@@ -81,8 +95,9 @@
                 android:orientation="vertical">
                 <ImageView
                     android:id="@+id/ivRotateIcon"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:padding="2dp"
                     android:src="@drawable/ic_rotate"/>
                 <TextView
                     android:id="@+id/tvRotateText"
@@ -116,7 +131,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/btnDone"
+                android:id="@+id/btnScale"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -124,15 +139,15 @@
                 android:gravity="center"
                 android:orientation="vertical">
                 <ImageView
-                    android:id="@+id/ivDoneIcon"
+                    android:id="@+id/ivScaleIcon"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@drawable/ic_done" />
+                    android:src="@drawable/ic_rotation" /> <!-- Temporarily using ic_rotate or ic_flip if ic_scale doesn't exist -->
                 <TextView
-                    android:id="@+id/tvDoneText"
+                    android:id="@+id/tvScaleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Done"
+                    android:text="Scale"
                     android:textColor="@android:color/white"
                     android:textSize="12sp" />
             </LinearLayout>

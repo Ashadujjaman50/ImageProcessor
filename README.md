@@ -1,15 +1,22 @@
 # ImageCropProcessor 📸
 
-**ImageCropProcessor** is a powerful and customizable Android library that provides image cropping functionality without any third-party dependencies. It allows users to zoom, pan, rotate, and flip images, and crop them according to various aspect ratios.
+**ImageCropProcessor** is a lightweight, powerful, and highly customizable Android library for image cropping. Built entirely using native Android APIs, it requires **zero third-party dependencies**, ensuring a small footprint and easy integration.
+
+It provides a smooth user experience with support for zooming, panning, rotating, and flipping, along with specialized frame types like **Circle** and **Rectangle**.
+
+---
 
 ### ✨ Features
 - ✅ **No Third-party Library:** Built entirely using native Android APIs.
-- ✅ **Gesture Support:** Supports Pinch to Zoom and Drag to Pan.
+- ✅ **Gesture Support:** Supports Pinch to Zoom, Drag to Pan, and Two-finger Rotation.
+- ✅ **Frame Types:** Supports both **RECTANGLE** and **CIRCLE** crop frames.
 - ✅ **Smart Bounce back:** Automatically snaps back and fits the frame if the image is moved outside or zoomed out too much.
-- ✅ **Dynamic Customization:** Dynamic control for Toolbar, Status Bar, and Control Panel colors.
-- ✅ **Rule of Thirds:** Displays guide lines (grid view) during cropping.
-- ✅ **Aspect Ratio:** Support for fixed ratios (e.g., 4:3, 16:9) or free-style cropping.
-- ✅ **Compression & Resize:** Granular control over output image quality and maximum dimensions.
+- ✅ **Dynamic Customization:** Full control over Toolbar, Status Bar, and Control Panel colors.
+- ✅ **Advanced Image Controls:** Dedicated buttons for Rotate (90°), Flip (Horizontal), and Scale (Manual Rotation Mode).
+- ✅ **Rule of Thirds:** Displays optional guide lines (grid view) for better composition.
+- ✅ **Compression & Resize:** Granular control over output image quality, format, and dimensions.
+
+---
 
 ### 🚀 Installation
 
@@ -31,65 +38,93 @@ Add the library to your app-level `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.github.Ashadujjaman50:ImageProcessor:1.0.0")
+    implementation("com.github.Ashadujjaman50:ImageProcessor:1.0.1")
 }
 ```
 
+---
+
 ### 🛠 Usage
 
-1. **Initialize ImageManager:**
+#### 1. Initialize Result Launchers
+Register for activity results in your `Activity` or `Fragment` to handle the cropped image and source selection.
+
 ```java
-ImageManager imageManager = new ImageManager(this);
+private ImageManager imageManager;
+private CropOptions options;
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    imageManager = new ImageManager(this);
+
+    // 1. Crop Result Handler
+    ActivityResultLauncher<Intent> cropResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri croppedUri = result.getData().getParcelableExtra("croppedUri");
+                    if (croppedUri != null) {
+                        ivCroppedImage.setImageURI(croppedUri);
+                    }
+                }
+            }
+    );
+
+    // 2. Camera/Gallery Launchers
+    // Use imageManager.openGallery(galleryLauncher) or imageManager.openCamera(cameraLauncher)
+}
 ```
 
-2. **Setup Crop Options:**
+#### 2. Configure `CropOptions`
+Customize the cropping UI and behavior using the `Builder`.
+
 ```java
-CropOptions options = new CropOptions.Builder()
-        .setAspectRatio(4, 3)
-
-        // Toolbar (Primary Color)
-        .setToolbarConfig(Color.parseColor("#1E88E5"), Color.WHITE, "Crop Photo")
-
-        // Status Bar (Darker version of primary)
-        .setStatusBarColor(Color.parseColor("#1565C0"))
-
-        // Active controls (Accent color)
-        .setActiveWidgetColor(Color.parseColor("#FFB300"))
-
-        // Background panel (Dark theme)
-        .setControlPanelColor(Color.parseColor("#121212"))
-
-        // Guides
+options = new CropOptions.Builder()
+        .setFrameType(CropOptions.FrameType.CIRCLE) // Choose RECTANGLE or CIRCLE
+        .setAspectRatio(1, 1)                      // Mandatory (1,1) for CIRCLE frame
+        .setToolbarConfig(Color.parseColor("#46A35C"), Color.WHITE, "Crop Photo")
+        .setStatusBarColor(Color.parseColor("#D6E4D7"))
+        .setActiveWidgetColor(Color.parseColor("#02B860"))
+        .setControlPanelColor(Color.parseColor("#1B1B1B"))
         .setShowGuides(true)
-
-        // Compression
-        .setCompression(Bitmap.CompressFormat.JPEG, 85)
-
-        // Max size
+        .setCompression(Bitmap.CompressFormat.JPEG, 80)
         .setMaxResultSize(1080, 1080)
-
         .build();
 ```
+
+> **💡 Note:** When using `FrameType.CIRCLE`, it is mandatory to set the Aspect Ratio to `(1, 1)` for a perfect circular result.
+
+---
+
+### 🎮 Editor Controls
+
+The editor provides intuitive controls to fine-tune your crop:
+
+| Control            | Description                                                                                                                                                                                                                                          |
+|:-------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Rotate**         | Rotates the image **90 degrees clockwise** with each click.                                                                                                                                                                                          |
+| **Flip**           | Flips the image **horizontally** (Mirror effect). Useful for fixing selfies.                                                                                                                                                                         |
+| **Scale (On/Off)** | **Toggles Rotation Mode**. When **ON**, it enables manual rotation via touch gestures and shows a precise rotation scale. When **OFF**, the rotation UI is hidden and manual rotation is locked to prevent accidental tilting while zooming/panning. |
+| **Done (✔)**       | Located in the **Toolbar**. Finalizes the cropping process and returns the result.                                                                                                                                                                   |
 
 ---
 
 ## 📋 Permissions
-
-### AndroidManifest.xml
-Ensure these permissions are added to your manifest:
+Add this to your `AndroidManifest.xml`:
 
 ```xml
 <uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 ```
+*Note: Storage permissions are typically handled via system pickers and don't require manual declaration for basic use.*
 
 ---
 
 ## 🤝 Contributing
-If you find any bugs or want to add new features, please create an **Issue** or send a **Pull Request**.
+Contributions are welcome! Please open an **Issue** or submit a **Pull Request** for any improvements.
 
 ## 📄 License
 This project is licensed under the MIT License.
 
 ---
-**Developed by [Ashadujjaman](https://github.com/Ashadujjaman50)**
+**Developed with ❤️ by [Ashadujjaman](https://github.com/Ashadujjaman50)**

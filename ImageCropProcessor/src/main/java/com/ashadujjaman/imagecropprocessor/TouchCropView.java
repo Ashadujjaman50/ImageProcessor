@@ -21,7 +21,6 @@ public class TouchCropView extends View {
 
     private Bitmap bitmap;
     private final Matrix matrix = new Matrix();
-    private final Matrix inverseMatrix = new Matrix();
 
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
@@ -40,6 +39,7 @@ public class TouchCropView extends View {
     private float currentRotation = 0f;
     private CropOptions.FrameType frameType = CropOptions.FrameType.RECTANGLE;
     private OnTouchRotationListener rotationListener;
+    private boolean rotationEnabled = true;
 
     public interface OnTouchRotationListener {
         void onRotationChanged(float totalRotation);
@@ -76,6 +76,14 @@ public class TouchCropView extends View {
 
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
+    }
+
+    public void setRotationEnabled(boolean enabled) {
+        this.rotationEnabled = enabled;
+    }
+
+    public boolean isRotationEnabled() {
+        return rotationEnabled;
     }
 
     public void setOnTouchRotationListener(OnTouchRotationListener listener) {
@@ -287,6 +295,14 @@ public class TouchCropView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
         gestureDetector.onTouchEvent(event);
+
+        if (!rotationEnabled) {
+            if (event.getActionMasked() == MotionEvent.ACTION_UP || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                checkBounds();
+                invalidate();
+            }
+            return true;
+        }
 
         int action = event.getActionMasked();
         switch (action) {
