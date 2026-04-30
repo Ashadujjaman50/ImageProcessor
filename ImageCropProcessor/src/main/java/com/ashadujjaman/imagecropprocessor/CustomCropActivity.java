@@ -210,6 +210,11 @@ public class CustomCropActivity extends AppCompatActivity {
             if (tvFlip != null) tvFlip.setTextColor(options.activeWidgetColor);
             if (ivScale != null) ivScale.setColorFilter(options.activeWidgetColor);
             if (tvScaleText != null) tvScaleText.setTextColor(options.activeWidgetColor);
+
+            // Set default scale state from options
+            if (touchCropView != null) {
+                touchCropView.setRotationEnabled(options.defaultScaleEnabled);
+            }
         }
 
         updateScaleUI();

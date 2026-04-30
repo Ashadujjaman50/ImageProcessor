@@ -173,23 +173,47 @@ public class TouchCropView extends View {
     private void checkBounds() {
         if (bitmap == null || cropRect.isEmpty()) return;
 
-        int iterations = 0;
-        while (!isCropRectInsideBitmap() && iterations < 50) {
-            matrix.postScale(1.02f, 1.02f, cropRect.centerX(), cropRect.centerY());
-            iterations++;
-        }
-
+        // 1. প্রথমে ছবিটিকে মুভ করে ফ্রেমের ভেতরে আনার চেষ্টা করি (জুম না করে)
         RectF bounds = new RectF();
         calculateTransformedBitmapBounds(bounds);
         float dx = 0, dy = 0;
-        
-        if (bounds.left > cropRect.left) dx = cropRect.left - bounds.left;
-        else if (bounds.right < cropRect.right) dx = cropRect.right - bounds.right;
-        
-        if (bounds.top > cropRect.top) dy = cropRect.top - bounds.top;
-        else if (bounds.bottom < cropRect.bottom) dy = cropRect.bottom - bounds.bottom;
+
+        // X-axis alignment
+        if (bounds.width() >= cropRect.width()) {
+            if (bounds.left > cropRect.left) dx = cropRect.left - bounds.left;
+            else if (bounds.right < cropRect.right) dx = cropRect.right - bounds.right;
+        } else {
+            // যদি ছবি ফ্রেমের চেয়ে সরু হয়, মাঝখানে রাখি
+            dx = cropRect.centerX() - bounds.centerX();
+        }
+
+        // Y-axis alignment
+        if (bounds.height() >= cropRect.height()) {
+            if (bounds.top > cropRect.top) dy = cropRect.top - bounds.top;
+            else if (bounds.bottom < cropRect.bottom) dy = cropRect.bottom - bounds.bottom;
+        } else {
+            // যদি ছবি ফ্রেমের চেয়ে ছোট হয়, মাঝখানে রাখি
+            dy = cropRect.centerY() - bounds.centerY();
+        }
 
         matrix.postTranslate(dx, dy);
+
+        // 2. মুভ করার পরেও যদি ফ্রেম খালি থাকে (যেমন ছবি ছোট বা বাঁকা থাকলে), তখন জুম করি
+        int iterations = 0;
+        while (!isCropRectInsideBitmap() && iterations < 50) {
+            matrix.postScale(1.01f, 1.01f, cropRect.centerX(), cropRect.centerY());
+            
+            // জুম করার সময়ও পজিশন ঠিক রাখি যেন ছবি ফ্রেমের বাইরে না চলে যায়
+            calculateTransformedBitmapBounds(bounds);
+            float tdx = 0, tdy = 0;
+            if (bounds.left > cropRect.left) tdx = cropRect.left - bounds.left;
+            else if (bounds.right < cropRect.right) tdx = cropRect.right - bounds.right;
+            if (bounds.top > cropRect.top) tdy = cropRect.top - bounds.top;
+            else if (bounds.bottom < cropRect.bottom) tdy = cropRect.bottom - bounds.bottom;
+            matrix.postTranslate(tdx, tdy);
+            
+            iterations++;
+        }
     }
 
     private void calculateTransformedBitmapBounds(RectF outBounds) {

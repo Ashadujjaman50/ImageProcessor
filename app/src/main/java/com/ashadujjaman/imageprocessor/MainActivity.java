@@ -88,26 +88,28 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        ivCroppedImage = findViewById(R.id.ivCroppedImage);
+        ivCroppedImage = findViewById(R.id.imageView);
         imageManager = new ImageManager(this);
 
         options = new CropOptions.Builder()
-                .setAspectRatio(3, 2)
-                .setFrameType(CropOptions.FrameType.RECTANGLE)
                 .setRotationEnabled(true)
                 .setFlipEnabled(true)
+                .setDefaultScaleEnabled(true)
                 .setToolbarConfig(Color.parseColor("#46A35C"), Color.WHITE, "Crop Photo")
                 .setStatusBarColor(Color.parseColor("#D6E4D7"))
                 .setActiveWidgetColor(Color.parseColor("#02B860"))
                 .setControlPanelColor(Color.parseColor("#1B1B1B"))
-                .setCompression(Bitmap.CompressFormat.JPEG, 80)
+                .setCompressionFormat(Bitmap.CompressFormat.JPEG)
+                .setCompressionQuality(80)
+                .setFrameType(CropOptions.FrameType.RECTANGLE)
+                .setAspectRatio(3, 2)
                 .setMaxResultSize(1080, 1080)
                 .setShowGuides(true)
                 .build();
 
-        findViewById(R.id.btnOpenGallery).setOnClickListener(v -> imageManager.openGallery(galleryLauncher));
+        findViewById(R.id.btnGallery).setOnClickListener(v -> imageManager.openGallery(galleryLauncher));
 
-        findViewById(R.id.btnOpenCamera).setOnClickListener(v -> {
+        findViewById(R.id.btnCamera).setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 imageManager.openCamera(cameraLauncher);
             } else {

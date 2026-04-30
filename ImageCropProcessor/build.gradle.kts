@@ -54,7 +54,7 @@ afterEvaluate {
                 // আপনার পছন্দমতো ID সেট করুন
                 groupId = "com.github.Ashadujjaman50"
                 artifactId = "image-processor"
-                version = "1.0.1"
+                version = "1.0.2"
             }
         }
     }

@@ -17,6 +17,7 @@ public class CropOptions implements Serializable {
     public boolean isFixedAspectRatio = false;
     public boolean showGuides = true;
     public FrameType frameType = FrameType.RECTANGLE;
+    public boolean defaultScaleEnabled = true;
 
     public int toolbarColor = Color.parseColor("#46A35C");
     public int toolbarTitleColor = Color.WHITE;
@@ -60,8 +61,12 @@ public class CropOptions implements Serializable {
             return this;
         }
 
-        public Builder setCompression(Bitmap.CompressFormat format, int quality) {
+        public Builder setCompressionFormat(Bitmap.CompressFormat format) {
             options.compressFormat = format;
+            return this;
+        }
+
+        public Builder setCompressionQuality(int quality) {
             options.compressQuality = quality;
             return this;
         }
@@ -94,6 +99,11 @@ public class CropOptions implements Serializable {
 
         public Builder setFrameType(FrameType type) {
             options.frameType = type;
+            return this;
+        }
+
+        public Builder setDefaultScaleEnabled(boolean enabled) {
+            options.defaultScaleEnabled = enabled;
             return this;
         }
 
