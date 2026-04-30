@@ -86,7 +86,7 @@ protected void onCreate(Bundle savedInstanceState) {
     );
 
     // 3. Gallery Launcher 
-    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+    ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
